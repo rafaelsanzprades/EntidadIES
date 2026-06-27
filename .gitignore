@@ -1,0 +1,48 @@
+# Directorios excluidos de GitHub
+RF*/
+APP-Curso-PD-JJ-RECURSOS/
+APP-Curso-PD-JJ/
+BOE - BOA/
+Currículos/
+MejoraDocente/
+PD FPGB 3013 IED/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# IDEs
+.vscode/
+.idea/
+
+# Archivos temporales
+*.bak
+*.bak.json
+*.tmp
+
+# Base de datos local (usar PostgreSQL en producción)
+*.db
+*.sqlite
+!backend/cdd_pro.db
+# Node / Next.js
+node_modules/
+.next/
+.npm/
+
+# Variables de entorno (no subir credenciales)
+.env
+.env.local
+.env.production
