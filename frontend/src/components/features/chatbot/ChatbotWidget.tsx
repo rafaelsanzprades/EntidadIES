@@ -122,7 +122,7 @@ export const ChatbotWidget = () => {
                   <Bot size={20} className="text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-[var(--foreground)] text-sm">Asistente Cuaderno FP</h3>
+                  <h3 className="font-semibold text-[var(--foreground)] text-sm">Asistente EntidadIES</h3>
                   <p className="text-xs text-[var(--muted-foreground)]">Respuestas generadas por IA</p>
                 </div>
               </div>

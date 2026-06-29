@@ -1,8 +1,8 @@
 module.exports = {
   apps: [
     {
-      name: "cuadernofp-backend",
-      cwd: "c:\\GD-rsp\\APP\\backend",
+      name: "entidadies-backend",
+      cwd: "c:\\GD-rsp\\APP-EntidadIES\\backend",
       script: ".venv313\\Scripts\\python.exe",
       args: "-m uvicorn main:app --reload --port 8000",
       interpreter: "none",
@@ -12,8 +12,8 @@ module.exports = {
       }
     },
     {
-      name: "cuadernofp-frontend",
-      cwd: "c:\\GD-rsp\\APP\\frontend",
+      name: "entidadies-frontend",
+      cwd: "c:\\GD-rsp\\APP-EntidadIES\\frontend",
       script: "node_modules\\next\\dist\\bin\\next",
       args: "dev",
       watch: false,

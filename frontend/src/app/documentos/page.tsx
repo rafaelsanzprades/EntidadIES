@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { AlertTriangle, BarChart, BookOpen, Calculator, Calendar, CalendarDays, ChevronRight, Construction, CornerLeftUp, Download, DownloadCloud, File, FileEdit, FileSpreadsheet, FileText, Folder, FolderOpen, GraduationCap, MapPin, Play, Scale, Search, Settings, UploadCloud, User, Users, X , Info } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/layout/Sidebar";
@@ -36,7 +36,6 @@ export default function DocumentosPage() {
 
   // State for Descargas
   const { activeModuleId, moduleData, setModuleData, activeCursoId, cursoData, setCursoData } = useAppStore();
-  const [loadingData, setLoadingData] = useState(true);
 
   const fetchDocuments = (path: string) => {
     setLoadingDocs(true);
@@ -65,32 +64,7 @@ export default function DocumentosPage() {
     fetchDocuments(activeTab);
   }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoadingData(true);
-      try {
-        if (activeModuleId && !moduleData) {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/module/${activeModuleId}`);
-          const data = await res.json();
-          if (data.status === "success") setModuleData(data.data);
-        }
-        if (activeCursoId && !cursoData) {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/module/${activeCursoId}`);
-          const data = await res.json();
-          if (data.status === "success") setCursoData(data.data);
-        }
-      } catch (err) {
-        console.error("Error fetching data:", err);
-      }
-      setLoadingData(false);
-    };
 
-    if (activeModuleId || activeCursoId) {
-      fetchData();
-    } else {
-      setLoadingData(false);
-    }
-  }, [activeModuleId, moduleData, activeCursoId, cursoData, setModuleData, setCursoData]);
 
   // Explorador Handlers
   const handleNavigate = (newPath: string) => {
@@ -227,10 +201,10 @@ export default function DocumentosPage() {
         </div>
       </div>
 
-            <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); fetchDocuments(val); }} className="w-full mb-6">
-              <TabsList className="bg-foreground/5 border border-[var(--glass-border)] w-full justify-start h-auto p-1 rounded-xl flex-wrap">
+            <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); fetchDocuments(val); }}>
+              <TabsList className="mb-2 max-w-full">
                 {TABS.map(tab => (
-                  <TabsTrigger key={tab} value={tab} className="rounded-lg px-6 py-2.5 data-[state=active]:bg-info data-[state=active]:text-foreground text-muted font-medium transition-all">
+                  <TabsTrigger key={tab} value={tab}>
                     {tab}
                   </TabsTrigger>
                 ))}

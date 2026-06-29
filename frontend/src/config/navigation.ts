@@ -1,4 +1,4 @@
-import { Activity, BookOpen, Building2, Calendar, Compass, FileText, FolderOpen, GraduationCap, Grid, MapPin, Settings, TrendingUp, Users, Wrench, Sparkles, BarChart3, Shield, Award, Globe, Lightbulb } from "lucide-react";
+import { Shield, Users, Compass, BookOpen, Globe, TrendingUp, Layers, Building2, Rocket, FolderOpen, Activity, Briefcase, Building, Calendar, Target, FileText, ClipboardList, Scale, GraduationCap, Heart, GitBranch, AlertTriangle, FileSearch, BarChart } from "lucide-react";
 
 export const navGroups = [
   {
@@ -6,21 +6,85 @@ export const navGroups = [
     sectionDescription: "",
     items: [
       { href: "/archivos", label: "Archivos", icon: FolderOpen, description: "Sincronización en la nube y configuración del espacio de trabajo." },
-      { href: "/catalogo", label: "Catálogo", icon: GraduationCap, description: "Catálogo oficial de familias profesionales, títulos, cursos → módulos. RA → CE." },
+      { href: "/calendario", label: "Calendario", icon: Calendar, description: "Diagrama de Gantt de actividades." },
       { href: "/documentos", label: "Documentos", icon: FolderOpen, description: "Explorador de archivos oficiales, legislación y otros documentos." },
       { href: "/ayuda", label: "Ayuda", icon: Activity, description: "Panel de ayuda." }
     ]
   },
   {
     title: "Centro",
-    sectionDescription: "Gestión general del centro, normativas de calidad, indicadores del sistema y empleabilidad.",
     items: [
-      { href: "/acreditacion", label: "Acreditación competencias", icon: Award, description: "Procedimiento de acreditación y reconocimiento de competencias profesionales." },
-      { href: "/indicadores", label: "Indicadores de calidad", icon: BarChart3, description: "Dashboard de los 34 indicadores del Sistema Estatal de Evaluación y Calidad de la FP." },
-      { href: "/insercion", label: "Inserción laboral", icon: TrendingUp, description: "Indicadores de inserción profesional de titulados de FP (SEPE/INE)." },
-      { href: "/calidad", label: "Calidad del centro", icon: Shield, description: "Autoevaluación y mejora continua según el Marco Común EQAVET." },
-      { href: "/internacionalizacion", label: "Internacionalización", icon: Globe, description: "Programas de movilidad y cooperación internacional (Erasmus+)." },
-      { href: "/innovacion", label: "Innovación y emprendimiento", icon: Lightbulb, description: "Proyectos de innovación, emprendimiento y Hubs de FP." }
-    ]
-  }
+      {
+        href: "/dafo",
+        label: "Matriz DAFO",
+        icon: Target,
+        description: "Análisis interno y externo",
+      },
+      {
+        href: "/objetivos",
+        label: "Objetivos Estratégicos",
+        icon: Activity,
+        description: "Objetivos de dirección",
+      },
+      { href: "/documental", label: "Documental", icon: BookOpen, description: "Documentos oficiales del centro (PEC, RRI, PGA, etc.)." },
+      { 
+        href: "/direccion", 
+        label: "Proyecto de Dirección", 
+        icon: FileText, 
+        description: "Análisis comparativo de los proyectos de dirección de IES Andalán." 
+      }
+    ],
+  },
+  {
+    title: "Gestión",
+    items: [
+      {
+        href: "/procesos",
+        label: "Mapa de Procesos (SGC)",
+        icon: GitBranch,
+        description: "Procesos Estratégicos, Clave y de Apoyo",
+      },
+      {
+        href: "/riesgos",
+        label: "Riesgos y Oportunidades",
+        icon: AlertTriangle,
+        description: "Matriz de riesgos y contexto",
+      },
+      {
+        href: "/auditorias",
+        label: "Auditorías (SGC)",
+        icon: ClipboardList,
+        description: "Internas, externas y No Conformidades",
+      },
+      {
+        href: "/indicadores",
+        label: "Indicadores de Calidad",
+        icon: BarChart,
+        description: "Métricas de los procesos",
+      },
+    ],
+  },
+  {
+    title: "Programas",
+    items: [
+      {
+        href: "/programas",
+        label: "Gestión de Programas",
+        icon: Layers,
+        description: "Ajedrez, Proa+, Erasmus...",
+      },
+      {
+        href: "/xcelence",
+        label: "Xcelence",
+        icon: Shield,
+        description: "Claves de Orientación",
+      },
+      {
+        href: "/ape",
+        label: "Aula de Emprendimiento",
+        icon: Briefcase,
+        description: "Aula Profesional de Emprendimiento",
+      },
+    ],
+  },
 ];

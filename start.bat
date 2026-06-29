@@ -1,6 +1,6 @@
 @echo off
 echo ====================================================
-echo   Iniciando Entorno de Desarrollo - Cuaderno FP (PM2)
+echo   Iniciando Entorno de Desarrollo - APP EntidadIES (PM2)
 echo ====================================================
 echo.
 

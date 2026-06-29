@@ -1,6 +1,6 @@
 @echo off
 echo ====================================================
-echo   Deteniendo Servicios de Cuaderno FP (PM2)
+echo   Deteniendo Servicios de APP EntidadIES (PM2)
 echo ====================================================
 echo.
 

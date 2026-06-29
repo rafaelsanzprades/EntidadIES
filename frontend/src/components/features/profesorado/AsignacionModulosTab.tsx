@@ -2,14 +2,13 @@
 import { CheckCircle2, Save, ShieldAlert, UserCog , Info } from "lucide-react";
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
-import { useUsers, useAdminModules, useAssignments, saveAssignments } from "@/hooks/useApi";
+import { useUsers, useAssignments, saveAssignments } from "@/hooks/useApi";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
 export function AsignacionModulosTab() {
   const { data: session, status } = useSession();
   const { data: usersData, isLoading: loadingUsers } = useUsers();
-  const { data: modulesData, isLoading: loadingModules } = useAdminModules();
   const { data: assignmentsData, mutate: mutateAssignments } = useAssignments();
 
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -18,7 +17,6 @@ export function AsignacionModulosTab() {
   const [successMsg, setSuccessMsg] = useState("");
 
   const users = usersData || [];
-  const modules = modulesData || [];
   const assignments = assignmentsData || {};
 
   const isSuperadmin = session?.user && (session.user as any).roles === "Superadmin";
@@ -52,7 +50,7 @@ export function AsignacionModulosTab() {
     }
   };
 
-  if (status === "loading" || loadingUsers || loadingModules) {
+  if (status === "loading" || loadingUsers) {
     return (
       <div className="flex items-center justify-center text-foreground py-12">
         Cargando Panel de Administración...
@@ -89,91 +87,62 @@ export function AsignacionModulosTab() {
           Asignación de Módulos
         </h2>
         <p className="text-muted mt-2 text-lg">
-          Selecciona un profesor y asínale los módulos que va a impartir este curso.
+          Selecciona un profesor y asígnale los grupos que imparte.
         </p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Lista de Profesores */}
-        <Card className="p-4 lg:w-1/3 border-accent/20 bg-foreground/10">
-          <h3 className="text-lg font-bold text-foreground mb-4 px-2">Profesores</h3>
-          <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2 scrollbar-hide">
+      <Card className="p-6">
+        <div className="mb-4">
+          <label className="text-sm font-semibold text-foreground block mb-2">Seleccionar Profesor</label>
+          <select
+            className="w-full bg-background border border-[var(--glass-border)] rounded-lg px-4 py-3 text-foreground"
+            value={selectedUserId || ""}
+            onChange={(e) => handleSelectUser(e.target.value)}
+          >
+            <option value="">-- Selecciona un profesor --</option>
             {users.map((u: any) => (
-              <button
-                key={u.id}
-                onClick={() => handleSelectUser(u.id)}
-                className={`w-full text-left p-4 rounded-xl transition-all ${selectedUserId == u.id ? 'bg-accent/20 border border-accent/50 text-foreground' : 'bg-foreground/5 border border-transparent text-foreground/80 hover:bg-foreground/10'}`}
-              >
-                <div className="font-semibold">{u.name}</div>
-                <div className="text-xs text-muted mt-1">{u.email}</div>
-                <div className="text-xs text-accent mt-2 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  {(assignments[u.id] || []).length} módulos asignados
-                </div>
-              </button>
+              <option key={u.id} value={u.id}>{u.name}</option>
             ))}
-          </div>
-        </Card>
+          </select>
+        </div>
 
-        {/* Panel de Asignaciones */}
-        <Card className="p-6 lg:w-2/3 border-white/5 bg-foreground/10 flex flex-col">
-          {!selectedUser ? (
-            <div className="flex-1 flex items-center justify-center text-muted min-h-[300px]">
-              Selecciona un profesor a la izquierda para gestionar sus módulos
-            </div>
-          ) : (
-            <>
-              <div className="flex justify-between items-center mb-6 border-b border-[var(--glass-border)] pb-4">
-                <div>
-                  <h3 className="text-xl font-bold text-foreground">{selectedUser.name}</h3>
-                  <p className="text-sm text-muted">{selectedUser.email}</p>
-                </div>
-                <Button 
-                  onClick={handleSave} 
-                  disabled={isSaving}
-                  className="flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  {isSaving ? "Guardando..." : "Guardar Asignaciones"}
-                </Button>
+        {selectedUser && (
+          <div className="mt-6">
+            <h3 className="text-lg font-bold text-foreground mb-4">
+              Grupos asignados a {selectedUser.name}
+            </h3>
+            <p className="text-sm text-muted mb-4">
+              Marca los grupos que este profesor imparte este curso.
+            </p>
+            
+            {localAssignments.length === 0 ? (
+              <p className="text-muted italic">No hay grupos asignados actualmente.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {localAssignments.map((groupId: number) => (
+                  <div key={groupId} className="flex items-center gap-3 p-3 rounded-lg bg-background/50 border border-[var(--glass-border)]">
+                    <CheckCircle2 className="w-5 h-5 text-success" />
+                    <span className="text-foreground">Grupo #{groupId}</span>
+                  </div>
+                ))}
               </div>
-              
+            )}
+
+            <div className="mt-6 flex gap-3">
+              <Button onClick={handleSave} disabled={isSaving}>
+                <Save className="w-4 h-4 mr-2" />
+                {isSaving ? "Guardando..." : "Guardar Asignaciones"}
+              </Button>
               {successMsg && (
-                <div className="bg-success/10 text-success p-3 rounded-lg mb-6 border border-success/30 flex items-center gap-2 animate-in fade-in">
+                <span className="text-success font-semibold flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5" />
                   {successMsg}
-                </div>
+                </span>
               )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-y-auto max-h-[500px] pr-2 scrollbar-hide">
-                {modules.map((m: any) => {
-                  const isAssigned = localAssignments.includes(m.id);
-                  return (
-                    <div 
-                      key={m.id}
-                      onClick={() => handleToggleModule(m.id)}
-                      className={`cursor-pointer p-4 rounded-xl border transition-all flex items-start gap-3 ${isAssigned ? 'bg-accent/10 border-accent/50' : 'bg-foreground/5 border-white/5 hover:bg-foreground/10'}`}
-                    >
-                      <div className={`mt-1 w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border ${isAssigned ? 'bg-accent border-accent text-black' : 'border-gray-500'}`}>
-                        {isAssigned && <CheckCircle2 className="w-4 h-4" />}
-                      </div>
-                      <div>
-                        <div className={`font-semibold text-sm ${isAssigned ? 'text-foreground' : 'text-foreground/80'}`}>
-                          {m.code}
-                        </div>
-                        <div className={`text-xs mt-1 ${isAssigned ? 'text-foreground/90' : 'text-muted'}`}>
-                          {m.name}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-        </Card>
-      </div>
+            </div>
+          </div>
+        )}
+      </Card>
     </div>
   );
 }
-

@@ -119,3 +119,187 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: List[ChatMessage]
+
+# ==========================================
+# 8. SISTEMA DE GESTIÓN DE CALIDAD (CENTRO)
+# ==========================================
+class QmsActorBase(BaseModel):
+    nombre: str
+    tipo: Optional[str] = None
+    descripcion: Optional[str] = None
+
+class QmsActorCreate(QmsActorBase):
+    pass
+
+class QmsActorResponse(QmsActorBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+class QmsProgramBase(BaseModel):
+    nombre: str
+    descripcion: Optional[str] = None
+    coordinador_actor_id: Optional[int] = None
+
+class QmsProgramCreate(QmsProgramBase):
+    pass
+
+class QmsProgramResponse(QmsProgramBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+class QmsDafoItemBase(BaseModel):
+    tipo: str
+    descripcion: str
+    curso_academico: Optional[str] = None
+
+class QmsDafoItemCreate(QmsDafoItemBase):
+    pass
+
+class QmsDafoItemResponse(QmsDafoItemBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+class QmsObjectiveBase(BaseModel):
+    program_id: Optional[int] = None
+    descripcion: str
+    curso_academico: Optional[str] = None
+
+class QmsObjectiveCreate(QmsObjectiveBase):
+    pass
+
+class QmsObjectiveResponse(QmsObjectiveBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+class QmsActivityBase(BaseModel):
+    objective_id: Optional[int] = None
+    nombre: str
+    descripcion: Optional[str] = None
+    responsable_actor_id: Optional[int] = None
+    temporalizacion: Optional[str] = None
+    recursos: Optional[str] = None
+    estado: Optional[str] = None
+
+class QmsActivityCreate(QmsActivityBase):
+    pass
+
+class QmsActivityResponse(QmsActivityBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+class QmsIndicatorBase(BaseModel):
+    process_id: Optional[int] = None
+    descripcion: str
+    frecuencia: Optional[str] = None
+    meta_cuantitativa: Optional[str] = None
+    valor_actual: Optional[str] = None
+    metodo_evaluacion: Optional[str] = None
+    responsable: Optional[str] = None
+
+class QmsIndicatorCreate(QmsIndicatorBase):
+    pass
+
+class QmsIndicatorResponse(QmsIndicatorBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+class QmsEvaluationBase(BaseModel):
+    indicator_id: Optional[int] = None
+    fecha: Optional[str] = None
+    analisis_desviacion: Optional[str] = None
+    propuesta_mejora: Optional[str] = None
+
+class QmsEvaluationCreate(QmsEvaluationBase):
+    pass
+
+class QmsEvaluationResponse(QmsEvaluationBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+class QmsRiskBase(BaseModel):
+    process_id: Optional[int] = None
+    descripcion: str
+    tipo: Optional[str] = None
+    probabilidad: Optional[int] = None
+    impacto: Optional[int] = None
+    nivel_riesgo: Optional[int] = None
+    accion_mitigacion: Optional[str] = None
+    estado: Optional[str] = None
+
+class QmsRiskCreate(QmsRiskBase):
+    pass
+
+class QmsRiskResponse(QmsRiskBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+class QmsAuditBase(BaseModel):
+    fecha: Optional[str] = None
+    tipo: Optional[str] = None
+    auditor: Optional[str] = None
+    alcance: Optional[str] = None
+    estado: Optional[str] = None
+
+class QmsAuditCreate(QmsAuditBase):
+    pass
+
+class QmsAuditResponse(QmsAuditBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+class QmsNonConformityBase(BaseModel):
+    audit_id: Optional[int] = None
+    process_id: Optional[int] = None
+    codigo: Optional[str] = None
+    descripcion: str
+    tipo: Optional[str] = None
+    estado: Optional[str] = None
+    accion_correctiva: Optional[str] = None
+    fecha_cierre_prevista: Optional[str] = None
+
+class QmsNonConformityCreate(QmsNonConformityBase):
+    pass
+
+class QmsNonConformityResponse(QmsNonConformityBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+# ==========================================
+# QMS: MAPA DE PROCESOS
+# ==========================================
+class QmsProcessBase(BaseModel):
+    tipo: str  # 'estrategico', 'clave', 'apoyo'
+    grupo: Optional[str] = None
+    nombre: str
+    drive_id: Optional[str] = None
+    descripcion: Optional[str] = None
+    responsable: Optional[str] = None
+    activo: bool = True
+    orden: int = 0
+
+class QmsProcessCreate(QmsProcessBase):
+    pass
+
+class QmsProcessResponse(QmsProcessBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+class QmsProcessDetailResponse(QmsProcessResponse):
+    indicadores: List[QmsIndicatorResponse] = []
+    riesgos: List[QmsRiskResponse] = []
+    no_conformidades: List[QmsNonConformityResponse] = []
+
+# ==========================================
+# XCELENCE
+# ==========================================
+class XcelenceEvaluationBase(BaseModel):
+    center_id: int
+    academic_year: str
+    eval_data: Dict[str, Any] = {}
+
+class XcelenceEvaluationCreate(XcelenceEvaluationBase):
+    pass
+
+class XcelenceEvaluationResponse(XcelenceEvaluationBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)

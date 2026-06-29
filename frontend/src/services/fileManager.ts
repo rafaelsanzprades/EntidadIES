@@ -108,48 +108,9 @@ export const fileManager = {
       const store = useAppStore.getState();
       store.setDataSource("local");
 
-      // Fetch RA/CE from catalog
-      let df_ra: any[] = [];
-      let df_ce: any[] = [];
-      try {
-        const res = await fetch(`/api/catalog/module/${moduleCode}`);
-        if (res.ok) {
-          const json = await res.json();
-          if (json.status === 'success' && json.data?.ra) {
-            const apiRas = json.data.ra;
-            df_ra = apiRas.map((r: any) => ({
-              id_ra: r.id,
-              desc_ra: r.descripcion,
-              Descripción: r.descripcion,
-              peso_ra: 0,
-              "Peso (%)": 0,
-              is_dual: false,
-            }));
-            df_ce = [];
-            apiRas.forEach((r: any) => {
-              if (r.ce && r.ce.length > 0) {
-                const weight = Math.floor(100 / r.ce.length);
-                r.ce.forEach((c: any) => {
-                  df_ce.push({
-                    id_ce: c.id,
-                    CE: c.id,
-                    id_ra: r.id,
-                    RA: r.id,
-                    desc_ce: c.descripcion,
-                    Descripción: c.descripcion,
-                    peso_ce: weight,
-                    "Peso (%)": weight,
-                    FEOE: false,
-                    UD: "",
-                  });
-                });
-              }
-            });
-          }
-        }
-      } catch (err) {
-        console.warn("Could not fetch catalog for module", moduleCode, err);
-      }
+      // RA/CE are now managed locally — no catalog fetch needed
+      const df_ra: any[] = [];
+      const df_ce: any[] = [];
 
       const newModuleData: ModuleData = {
         df_ud: [],
@@ -668,75 +629,7 @@ export const fileManager = {
 
       const id = filename.replace('.fpp', '').replace('.cddp', '').replace('.json', '') || "imported-pd";
 
-      // Fetch curriculum to reconstruct descriptions
-      const moduleCode = parsed.info_modulo?.codigo || id.split('-')[0];
-      try {
-        const res = await fetch(`/api/catalog/module/${moduleCode}`);
-        if (res.ok) {
-          const catalogData = await res.json();
-          if (catalogData.status === 'success' && catalogData.data) {
-            const apiRas = catalogData.data.ra;
-
-            // Reconstruct RAs
-            if (parsed.df_ra && Array.isArray(parsed.df_ra)) {
-              parsed.df_ra.forEach((ra: any) => {
-                const apiRa = apiRas.find((r: any) => r.id === ra.id_ra || r.id === ra.RA);
-                if (apiRa) {
-                  ra.desc_ra = apiRa.descripcion;
-                  ra.Descripción = apiRa.descripcion;
-                }
-              });
-            } else if (apiRas && apiRas.length > 0) {
-              parsed.df_ra = apiRas.map((r: any) => ({
-                id_ra: r.id,
-                desc_ra: r.descripcion, Descripción: r.descripcion,
-                peso_ra: 0, "Peso (%)": 0,
-                is_dual: false
-              }));
-            }
-
-            // Reconstruct CEs and calculate weight without decimals
-            if (parsed.df_ce && Array.isArray(parsed.df_ce)) {
-              parsed.df_ce.forEach((ce: any) => {
-                const apiRa = apiRas.find((r: any) => r.id === ce.id_ra || r.id === ce.RA);
-                if (apiRa && apiRa.ce) {
-                  const apiCe = apiRa.ce.find((c: any) => c.id === ce.id_ce || c.id === ce.CE);
-                  if (apiCe) {
-                    ce.desc_ce = apiCe.descripcion;
-                    ce.Descripción = apiCe.descripcion;
-                  }
-
-                  // Automatically assign equal weight without decimals if weight is 0 or undefined
-                  const peso = ce.peso_ce || ce["Peso (%)"];
-                  if (!peso) {
-                    const weight = Math.floor(100 / apiRa.ce.length);
-                    ce.peso_ce = weight;
-                    ce["Peso (%)"] = weight;
-                  }
-                }
-              });
-            } else if (apiRas && apiRas.length > 0) {
-              parsed.df_ce = [];
-              apiRas.forEach((r: any) => {
-                if (r.ce && r.ce.length > 0) {
-                  const weight = Math.floor(100 / r.ce.length);
-                  r.ce.forEach((c: any) => {
-                    parsed.df_ce.push({
-                      id_ce: c.id, CE: c.id,
-                      id_ra: r.id, RA: r.id,
-                      desc_ce: c.descripcion, Descripción: c.descripcion,
-                      peso_ce: weight, "Peso (%)": weight,
-                      FEOE: false, UD: ""
-                    });
-                  });
-                }
-              });
-            }
-          }
-        }
-      } catch (err) {
-        console.warn("Could not fetch curriculum for module", moduleCode);
-      }
+      // RA/CE descriptions come from the imported file data — no catalog fetch needed
 
       useAppStore.getState().setActiveModuleId(id);
       useAppStore.getState().setModuleData(parsed);

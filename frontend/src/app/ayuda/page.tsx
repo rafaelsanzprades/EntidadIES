@@ -1,9 +1,7 @@
-﻿"use client";
+"use client";
 import { Activity, AlertTriangle, ArrowRight, BarChart2, BookOpen, Briefcase, Building2, CalendarDays, Check, CheckCircle, ClipboardList, FileText, GraduationCap, HeartHandshake, Layers, Users, Wrench, XCircle, ChevronDown, ListChecks, Info } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
-import Sidebar from "@/components/layout/Sidebar";
-import Header from "@/components/layout/Header";
-import { MotionWrapper } from "@/components/ui/MotionWrapper";
+import PageLayout from "@/components/layout/PageLayout";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import Link from "next/link";
@@ -203,7 +201,7 @@ const FAQS = [
     group: "Solución de Problemas y Aspectos Técnicos",
     items: [
       { q: "¿Qué pasa si las gráficas de la pantalla 'Hoy' no cargan?", a: "Comprueba en 'Archivos' que tienes seleccionada una Programación activa y un Curso activo. Las gráficas necesitan saber a qué módulo y a qué alumnos apuntan para poder dibujar la información." },
-      { q: "¿Se puede usar Cuaderno FP en móviles o tablets?", a: "Sí, el diseño es 100% responsivo. Sin embargo, para tareas densas como rellenar las grandes tablas de Matrices o planificar la Programación, te recomendamos usar pantallas de ordenador." },
+      { q: "¿Se puede usar EntidadIES en móviles o tablets?", a: "Sí, el diseño es 100% responsivo. Sin embargo, para tareas densas como rellenar las grandes tablas de Matrices o planificar la Programación, te recomendamos usar pantallas de ordenador." },
       { q: "La app va muy lenta o he detectado un error extraño", a: "Intenta recargar la página completamente (F5 o Ctrl+R). Si el error sigue apareciendo, exporta tus datos (.json) para ponerlos a salvo y ponte en contacto con el soporte o abre un 'Issue' en GitHub detallando tu problema." }
     ]
   }
@@ -526,8 +524,7 @@ export default function AyudaPage() {
   const activeTabCleanLabel = TABS.find(t => t.id === activeTab)?.cleanLabel;
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
+    <>
       <AIWizardModal
         isOpen={aiModalOpen}
         onClose={() => setAiModalOpen(false)}
@@ -536,37 +533,18 @@ export default function AyudaPage() {
           toast.success("Estructura guardada.");
         }}
       />
-      <div className="flex-1 flex flex-col relative z-10 min-w-0">
-        <Header breadcrumbSuffix={activeTabCleanLabel} />
-        <div className="flex-1 p-8 overflow-y-auto scrollbar-hide">
-          <MotionWrapper className="space-y-8 pb-12">
-
-
-            {/* Título de la página */}
-            <div>
-              <h1 className="text-[1.3rem] font-extrabold text-foreground tracking-tight flex items-center gap-3">
-                <Activity className="w-6 h-6 text-accent" /> Ayuda
-              </h1>
-              <p className="text-muted mt-2 text-base">Guía de inicio, FAQ y validación de datos.</p>
-            </div>
-
-            {/* Pestañas de Navegación */}
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="mb-2 max-w-full">
-                {TABS.map(tab => (
-                  <TabsTrigger key={tab.id} value={tab.id}>
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-      <div className="flex items-start gap-3 p-4 rounded-xl bg-accent/5 border border-accent/20 mb-6">
-        <Info className="w-5 h-5 text-accent mt-0.5 shrink-0" />
-        <div>
-          <p className="text-sm font-semibold text-foreground">Soporte y Ayuda</p>
-          <p className="text-sm text-muted mt-1">Aspectos genéricos de uso y asistencia técnica para la aplicación.</p>
-        </div>
-      </div>
+      
+      <PageLayout
+        icon={<Activity className="w-8 h-8" />}
+        title="Centro de Ayuda"
+        description="Explora las guías rápidas o busca cómo realizar tareas en la aplicación."
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        infoTitle="Soporte y Ayuda"
+        infoDescription="Aspectos genéricos de uso y asistencia técnica para la aplicación."
+        breadcrumbSuffix={activeTabCleanLabel}
+      >
 
             {/* ── CONTENIDO: ASISTENTE IA ──────────────────────────────── */}
             {activeTab === "asistente" && (
@@ -592,7 +570,7 @@ export default function AyudaPage() {
                       <Sparkles className="w-5 h-5 text-info" /> ¿Cómo obtengo mi API Key?
                     </h3>
                     <p className="text-muted text-sm">
-                      CuadernoFP utiliza un modelo "Bring Your Own Key" (Trae tu propia clave) para garantizar que tus datos no pasan por servidores intermedios y mantener la herramienta 100% gratuita.
+                      EntidadIES utiliza un modelo "Bring Your Own Key" (Trae tu propia clave) para garantizar que tus datos no pasan por servidores intermedios y mantener la herramienta 100% gratuita.
                     </p>
 
                     <ol className="list-decimal pl-5 space-y-3 text-sm text-foreground/90 font-medium">
@@ -728,10 +706,8 @@ export default function AyudaPage() {
               </div>
             )}
 
-          </MotionWrapper>
-        </div>
-      </div>
-    </div>
+      </PageLayout>
+    </>
   );
 }
 

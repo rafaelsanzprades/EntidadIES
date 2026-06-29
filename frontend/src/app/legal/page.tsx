@@ -52,8 +52,8 @@ export default function LegalPage() {
                   <div className="text-sm text-muted space-y-1 mt-2">
                     <p><strong>Titular:</strong> Rafael Sanz Prades</p>
                     <p><strong>Contacto:</strong> <a href="mailto:rafaelsanzprades@gmail.com" className="text-info hover:underline">rafaelsanzprades@gmail.com</a></p>
-                    <p><strong>Sitio Web:</strong> <a href="https://cuadernofp.web.app/" target="_blank" rel="noopener noreferrer" className="text-info hover:underline">https://cuadernofp.web.app/</a></p>
-                    <p><strong>Actividad:</strong> Herramienta de productividad docente para ciclos formativos.</p>
+                    <p><strong>Sitio Web:</strong> Entorno local (Uso exclusivo en red del centro)</p>
+                    <p><strong>Actividad:</strong> Herramienta de gestión para centros educativos.</p>
                   </div>
                 </div>
 

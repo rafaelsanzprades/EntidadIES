@@ -33,7 +33,7 @@ export function TourGuide() {
           {
             element: "body",
             popover: {
-              title: "¡Bienvenido a Cuaderno FP!",
+              title: "¡Bienvenido a EntidadIES!",
               description: "Te haremos un breve recorrido de 4 pasos para que le saques el máximo provecho. Puedes saltarlo o cerrarlo en cualquier momento.",
               align: "center"
             }

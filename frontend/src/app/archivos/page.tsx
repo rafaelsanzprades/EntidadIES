@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { AlertTriangle, BookOpen, CheckCircle, Cloud, Database, Download, FileJson, FolderOpen, Save, Shield, ShieldAlert, Sparkles, Upload, Users, Zap, Plus, Copy, HardDrive, Info } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Sidebar from "@/components/layout/Sidebar";
@@ -14,6 +14,7 @@ import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { GoogleDriveSyncPanel } from "@/components/features/cloud/GoogleDriveSyncPanel";
 import { NewFileWizard } from "@/components/features/cloud/NewFileWizard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import PageLayout from "@/components/layout/PageLayout";
 import { initialGroups } from "@/store/initialData";
 import { OneDriveSyncPanel } from "@/components/features/cloud/OneDriveSyncPanel";
 
@@ -349,310 +350,283 @@ export default function ArchivosTrabajoPage() {
   // ── Render ──────────────────────────────────────────────
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col h-screen min-w-0">
-        <Header breadcrumbSuffix={breadcrumbSuffixMap[activeTab] ?? "Gestor de archivos"} />
+    <>
+      <PageLayout
+        icon={<FolderOpen className="w-6 h-6" />}
+        title="Archivos"
+        description="Gestión de archivos de Programación y Curso."
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        infoTitle="Herramienta operativa y de gestión - Archivos"
+        infoDescription="Sincronización en la nube y configuración del espacio de trabajo."
+        breadcrumbSuffix={breadcrumbSuffixMap[activeTab] ?? "Gestor de archivos"}
+        rightAction={
+          activeTab === "datos" && workspaceHandle ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="border border-warning/50 text-warning hover:bg-warning/10"
+              onClick={async () => {
+                const res = await fileManager.validateWorkspaceLinks(workspaceHandle);
+                setBrokenLinks(res.brokenGroups);
+                setValidationModalOpen(true);
+              }}
+            >
+              <ShieldAlert className="w-4 h-4 mr-2" /> Validar Workspace
+            </Button>
+          ) : null
+        }
+      >
+        <div className="space-y-8">
+          {/* TAB: FILE MANAGER */}
+          {activeTab === "datos" && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <div className="flex-1 p-8 overflow-y-auto scrollbar-hide">
-          <MotionWrapper className="w-full space-y-8 pb-12">
-
-
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-[1.3rem] font-extrabold text-foreground tracking-tight flex items-center gap-3">
-                  <FolderOpen className="w-6 h-6 text-accent" /> Archivos
-                </h1>
-                <p className="text-muted mt-2 text-lg">Gestión de archivos de Programación y Curso.</p>
-              </div>
-            </div>
-
-            {/* Navigation Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <div className="flex justify-between items-center mb-2 border-b border-[var(--glass-border)]">
-                <TabsList className="max-w-full overflow-x-auto flex flex-nowrap scrollbar-hide rounded-none bg-transparent h-auto p-0">
-                  {TABS.map(tab => (
-                    <TabsTrigger key={tab.id} value={tab.id} className="whitespace-nowrap shrink-0 py-2">
-                      {tab.label}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-                {activeTab === "datos" && workspaceHandle && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="border border-warning/50 text-warning hover:bg-warning/10"
-                    onClick={async () => {
-                      const res = await fileManager.validateWorkspaceLinks(workspaceHandle);
-                      setBrokenLinks(res.brokenGroups);
-                      setValidationModalOpen(true);
-                    }}
-                  >
-                    <ShieldAlert className="w-4 h-4 mr-2" /> Validar Workspace
-                  </Button>
-                )}
-              </div>
-            </Tabs>
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-accent/5 border border-accent/20 mb-6 mt-6">
-              <Info className="w-5 h-5 text-accent mt-0.5 shrink-0" />
-              <div>
-                <p className="text-sm font-semibold text-foreground">Herramienta operativa y de gestión - Archivos</p>
-                <p className="text-sm text-muted mt-1">Sincronización en la nube y configuración del espacio de trabajo.</p>
-              </div>
-            </div>
-
-            <div className="space-y-8 animate-in fade-in duration-300 pt-4">
-              {/* TAB: FILE MANAGER */}
-              {activeTab === "datos" && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                  {/* ── Columna GRUPO ── */}
-                  <Card className={`p-6 border rounded-2xl shadow-lg flex flex-col relative overflow-hidden group ${isDemoLoaded ? 'bg-foreground/5 border-warning/20' : 'bg-foreground/5 border-[var(--glass-border)]'}`}>
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
-                      <FolderOpen className={`w-24 h-24 ${isDemoLoaded ? 'text-warning' : 'text-accent'}`} />
-                    </div>
-                    <div className="relative z-10 flex flex-col h-full">
-                      <div className="mb-4">
-                        <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
-                          <FolderOpen className={`w-5 h-5 ${isDemoLoaded ? 'text-warning' : 'text-accent'}`} /> Grupos
-                        </h3>
-                        <p className="text-sm text-muted mt-2 leading-relaxed">
-                          Abre un Grupo para cargar automáticamente su Programación y su Curso asociado.
-                        </p>
-                      </div>
-
-                      <div className="flex-1 flex flex-col gap-2 min-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                        {!workspaceHandle ? (
-                          <div className="h-full flex flex-col items-center justify-center text-center p-4">
-                            <Database className="w-8 h-8 text-muted/50 mb-2" />
-                            <p className="text-sm text-muted font-medium mb-4">Conecta una carpeta local para ver tus archivos.</p>
-                            <Button onClick={async () => {
-                              const handle = await fileManager.openWorkspaceDirectory();
-                              if (handle) toast.success("Carpeta local conectada.");
-                            }} className="bg-accent/10 hover:bg-accent/20 text-accent border border-accent/30 transition-all">
-                              <FolderOpen className="w-4 h-4 mr-2" /> Conectar Carpeta Local
-                            </Button>
-                          </div>
-                        ) : workspaceFiles.grupos.length === 0 ? (
-                          <div className="h-full flex items-center justify-center text-center p-4">
-                            <p className="text-sm text-muted">No se han encontrado grupos.</p>
-                          </div>
-                        ) : (
-                          workspaceFiles.grupos.map(g => (
-                            <button
-                              key={g}
-                              onDoubleClick={async () => {
-                                const ok = await fileManager.loadGroupFromWorkspace(workspaceHandle, g);
-                                if (ok) toast.success(`Grupo ${g} abierto correctamente`);
-                                else toast.error("Error al abrir el grupo");
-                              }}
-                              className="w-full text-left p-3 rounded-lg border border-[var(--glass-border)] bg-foreground/[0.02] hover:bg-foreground/5 transition-colors group/item"
-                            >
-                              <div className="flex items-center gap-2">
-                                <FolderOpen className="w-4 h-4 text-accent/70 group-hover/item:text-accent transition-colors shrink-0" />
-                                <span className="text-sm font-medium truncate" title={g}>{g.replace('.json', '')}</span>
-                              </div>
-                            </button>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-
-                  {/* ── Columna PROGRAMACIÓN ── */}
-                  <Card className={`p-6 border rounded-2xl shadow-lg flex flex-col relative overflow-hidden group ${isDemoLoaded ? 'bg-foreground/5 border-warning/20' : 'bg-foreground/5 border-info/20'}`}>
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
-                      <BookOpen className={`w-24 h-24 ${isDemoLoaded ? 'text-warning' : 'text-info'}`} />
-                    </div>
-                    <div className="relative z-10 flex flex-col h-full">
-                      <div className="mb-4">
-                        <div className="flex justify-between items-center mb-1">
-                          <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
-                            <BookOpen className={`w-5 h-5 ${isDemoLoaded ? 'text-warning' : 'text-info'}`} /> Programaciones
-                          </h3>
-                          {hasPdFile && <Badge variant={isDemoLoaded ? 'warning' : 'info'}>Activa</Badge>}
-                        </div>
-                        <p className="text-sm text-muted mt-2 leading-relaxed">
-                          Plantillas curriculares. Doble clic para cargar una programación independiente.
-                        </p>
-                      </div>
-
-                      <div className="flex-1 flex flex-col gap-2 min-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
-                        {workspaceHandle && workspaceFiles.programaciones.length > 0 ? (
-                          workspaceFiles.programaciones.map(p => {
-                            const isActive = pdFileSource.type === 'local' && pdFileSource.fileName === p;
-                            return (
-                              <button
-                                key={p}
-                                onDoubleClick={async () => {
-                                  const ok = await fileManager.loadProgramacionFromWorkspace(workspaceHandle, p);
-                                  if (ok) toast.success(`Programación abierta correctamente`);
-                                  else toast.error("Error al abrir programación");
-                                }}
-                                className={`w-full text-left p-3 rounded-lg border transition-colors group/item ${isActive ? 'bg-info/10 border-info/40 shadow-sm' : 'border-[var(--glass-border)] bg-foreground/[0.02] hover:bg-foreground/5'}`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <BookOpen className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-info' : 'text-info/70 group-hover/item:text-info'}`} />
-                                  <span className={`text-sm font-medium truncate ${isActive ? 'text-info font-bold' : ''}`} title={p}>{p.replace('.json', '')}</span>
-                                </div>
-                              </button>
-                            );
-                          })
-                        ) : workspaceHandle ? (
-                          <div className="h-full flex items-center justify-center text-center p-4">
-                            <p className="text-sm text-muted">No se han encontrado programaciones.</p>
-                          </div>
-                        ) : null}
-                      </div>
-
-                      {/* Botonera Programación */}
-                      <div className="flex flex-col gap-2 pt-4 mt-auto border-t border-[var(--glass-border)]">
-                        {isDemoLoaded ? (
-                          <Button onClick={handleLoadDemo} className="w-full bg-warning/20 hover:bg-warning/30 text-warning border border-warning/30">
-                            <Zap className="w-4 h-4 mr-2" /> Recargar DEMO
-                          </Button>
-                        ) : (
-                          <>
-                            <div className="flex gap-2">
-                              <Button onClick={handleNewPd} className="flex-1 bg-info/10 hover:bg-info/20 text-info border border-info/30 transition-all text-xs h-9">
-                                <Plus className="w-3 h-3 mr-1" /> Nueva (Catálogo)
-                              </Button>
-                              <Button onClick={handleOpenPd} className="flex-1 bg-foreground/5 hover:bg-foreground/10 text-foreground border border-[var(--glass-border)] transition-all text-xs h-9">
-                                <FolderOpen className="w-3 h-3 mr-1" /> Importar
-                              </Button>
-                            </div>
-                            {hasPdFile && (
-                              <div className="flex gap-2">
-                                <Button onClick={handleSavePd} className="flex-1 bg-info/10 hover:bg-info/20 text-info border border-info/30 transition-all text-xs h-9">
-                                  <Save className="w-3 h-3 mr-1" /> Guardar
-                                </Button>
-                                <Button onClick={handleSaveAsPd} className="bg-foreground/5 hover:bg-foreground/10 text-muted border border-[var(--glass-border)] transition-all px-3 h-9" title="Guardar como...">
-                                  <Copy className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-
-                  {/* ── Columna CURSO ── */}
-                  <Card className={`p-6 border rounded-2xl shadow-lg flex flex-col relative overflow-hidden group ${isDemoLoaded ? 'bg-foreground/5 border-warning/20' : 'bg-foreground/5 border-success/20'}`}>
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
-                      <Users className={`w-24 h-24 ${isDemoLoaded ? 'text-warning' : 'text-success'}`} />
-                    </div>
-                    <div className="relative z-10 flex flex-col h-full">
-                      <div className="mb-4">
-                        <div className="flex justify-between items-center mb-1">
-                          <h3 className={`text-xl font-bold flex items-center gap-2 ${(!isDemoLoaded && !hasPdFile) ? 'text-muted' : 'text-foreground'}`}>
-                            <Users className={`w-5 h-5 ${isDemoLoaded ? 'text-warning' : (!isDemoLoaded && !hasPdFile) ? 'text-muted' : 'text-success'}`} /> Cursos
-                          </h3>
-                          {hasCursoFile && <Badge variant={isDemoLoaded ? 'warning' : 'success'}>Activo</Badge>}
-                        </div>
-                        <p className="text-sm text-muted mt-2 leading-relaxed">
-                          Cuadernos de clase e instancias temporales de una programación.
-                        </p>
-                      </div>
-
-                      <div className="flex-1 flex flex-col gap-2 min-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
-                        {workspaceHandle && workspaceFiles.cursos.length > 0 ? (
-                          workspaceFiles.cursos.map(c => {
-                            const isActive = cursoFileSource.type === 'local' && cursoFileSource.fileName === c;
-                            return (
-                              <button
-                                key={c}
-                                onDoubleClick={() => {
-                                  toast.error("Para abrir un curso de forma segura, haz doble clic en su Grupo asociado en la primera columna.");
-                                }}
-                                className={`w-full text-left p-3 rounded-lg border transition-colors group/item ${isActive ? 'bg-success/10 border-success/40 shadow-sm' : 'border-[var(--glass-border)] bg-foreground/[0.02] hover:bg-foreground/5 opacity-80 hover:opacity-100'}`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <Users className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-success' : 'text-success/70 group-hover/item:text-success'}`} />
-                                  <span className={`text-sm font-medium truncate ${isActive ? 'text-success font-bold' : ''}`} title={c}>{c.replace('.json', '')}</span>
-                                </div>
-                              </button>
-                            );
-                          })
-                        ) : workspaceHandle ? (
-                          <div className="h-full flex items-center justify-center text-center p-4">
-                            <p className="text-sm text-muted">No se han encontrado cursos.</p>
-                          </div>
-                        ) : null}
-                      </div>
-
-                      {/* Botonera Curso */}
-                      <div className="flex flex-col gap-2 pt-4 mt-auto border-t border-[var(--glass-border)]">
-                        {isDemoLoaded ? (
-                          <Button onClick={handleLoadDemo} className="w-full bg-warning/20 hover:bg-warning/30 text-warning border border-warning/30">
-                            <Zap className="w-4 h-4 mr-2" /> Recargar DEMO
-                          </Button>
-                        ) : (
-                          <>
-                            <div className="flex gap-2">
-                              <Button disabled={!hasPdFile} onClick={handleNewCurso} className="flex-1 bg-success/10 hover:bg-success/20 text-success border border-success/30 transition-all disabled:opacity-30 text-xs h-9" title="Crea un curso y su archivo Grupo asociado">
-                                <Plus className="w-3 h-3 mr-1" /> Iniciar Curso (+ Grupo)
-                              </Button>
-                              <Button disabled={!hasPdFile} onClick={handleOpenCurso} className="bg-foreground/5 hover:bg-foreground/10 text-foreground border border-[var(--glass-border)] transition-all px-3 h-9" title="Importar curso huérfano">
-                                <FolderOpen className="w-3 h-3" />
-                              </Button>
-                            </div>
-                            {hasCursoFile && (
-                              <div className="flex gap-2">
-                                <Button onClick={handleSaveCurso} className="flex-1 bg-success/10 hover:bg-success/20 text-success border border-success/30 transition-all text-xs h-9">
-                                  <Save className="w-3 h-3 mr-1" /> Guardar
-                                </Button>
-                                <Button onClick={handleSaveAsCurso} className="bg-foreground/5 hover:bg-foreground/10 text-muted border border-[var(--glass-border)] transition-all px-3 h-9" title="Guardar como...">
-                                  <Copy className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-
+              {/* ── Columna GRUPO ── */}
+              <Card className={`p-6 border rounded-2xl shadow-lg flex flex-col relative overflow-hidden group ${isDemoLoaded ? 'bg-foreground/5 border-warning/20' : 'bg-foreground/5 border-[var(--glass-border)]'}`}>
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
+                  <FolderOpen className={`w-24 h-24 ${isDemoLoaded ? 'text-warning' : 'text-accent'}`} />
                 </div>
-              )}
-
-              {/* TAB: NUBE (GOOGLE DRIVE & ONEDRIVE) */}
-              {activeTab === "nube" && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Columna Google Drive */}
-                  <div className="space-y-4">
+                <div className="relative z-10 flex flex-col h-full">
+                  <div className="mb-4">
                     <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
-                      <Cloud className="w-5 h-5 text-[#4285F4]" /> Google Drive
+                      <FolderOpen className={`w-5 h-5 ${isDemoLoaded ? 'text-warning' : 'text-accent'}`} /> Grupos
                     </h3>
-                    <GoogleDriveSyncPanel />
+                    <p className="text-sm text-muted mt-2 leading-relaxed">
+                      Abre un Grupo para cargar automáticamente su Programación y su Curso asociado.
+                    </p>
                   </div>
 
-                  {/* Columna OneDrive */}
-                  <div className="space-y-4">
-                    <OneDriveSyncPanel />
-                  </div>
-                </div>
-              )}
-
-            </div>
-
-            {/* Security notice - always visible, full-width */}
-            <div className="mt-8">
-              <Card className="flex items-start gap-4 p-6 bg-info/5 border border-info/20 rounded-2xl shadow-lg">
-                <span className="text-info mt-1 shrink-0"><ShieldAlert className="w-8 h-8" /></span>
-                <div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">Seguridad y RGPD garantizados</h3>
-                  <div className="text-sm text-foreground/80 space-y-2 leading-relaxed">
-                    <p>CuadernoFP procesa toda tu información confidencial exclusivamente en tu navegador. <strong>Tú eres el dueño de tus archivos</strong>.</p>
-                    <p>Ningún dato de tu alumnado se envía a la nube, salvo que uses la Sincronización autorizada en tu cuenta.</p>
-                    <p className="font-semibold text-info mt-2">Asegúrate de pulsar &quot;Guardar&quot; al finalizar tu sesión de trabajo para no perder los últimos cambios.</p>
+                  <div className="flex-1 flex flex-col gap-2 min-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                    {!workspaceHandle ? (
+                      <div className="h-full flex flex-col items-center justify-center text-center p-4">
+                        <Database className="w-8 h-8 text-muted/50 mb-2" />
+                        <p className="text-sm text-muted font-medium mb-4">Conecta una carpeta local para ver tus archivos.</p>
+                        <Button onClick={async () => {
+                          const handle = await fileManager.openWorkspaceDirectory();
+                          if (handle) toast.success("Carpeta local conectada.");
+                        }} className="bg-accent/10 hover:bg-accent/20 text-accent border border-accent/30 transition-all">
+                          <FolderOpen className="w-4 h-4 mr-2" /> Conectar Carpeta Local
+                        </Button>
+                      </div>
+                    ) : workspaceFiles.grupos.length === 0 ? (
+                      <div className="h-full flex items-center justify-center text-center p-4">
+                        <p className="text-sm text-muted">No se han encontrado grupos.</p>
+                      </div>
+                    ) : (
+                      workspaceFiles.grupos.map(g => (
+                        <button
+                          key={g}
+                          onDoubleClick={async () => {
+                            const ok = await fileManager.loadGroupFromWorkspace(workspaceHandle, g);
+                            if (ok) toast.success(`Grupo ${g} abierto correctamente`);
+                            else toast.error("Error al abrir el grupo");
+                          }}
+                          className="w-full text-left p-3 rounded-lg border border-[var(--glass-border)] bg-foreground/[0.02] hover:bg-foreground/5 transition-colors group/item"
+                        >
+                          <div className="flex items-center gap-2">
+                            <FolderOpen className="w-4 h-4 text-accent/70 group-hover/item:text-accent transition-colors shrink-0" />
+                            <span className="text-sm font-medium truncate" title={g}>{g.replace('.json', '')}</span>
+                          </div>
+                        </button>
+                      ))
+                    )}
                   </div>
                 </div>
               </Card>
+
+              {/* ── Columna PROGRAMACIÓN ── */}
+              <Card className={`p-6 border rounded-2xl shadow-lg flex flex-col relative overflow-hidden group ${isDemoLoaded ? 'bg-foreground/5 border-warning/20' : 'bg-foreground/5 border-info/20'}`}>
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
+                  <BookOpen className={`w-24 h-24 ${isDemoLoaded ? 'text-warning' : 'text-info'}`} />
+                </div>
+                <div className="relative z-10 flex flex-col h-full">
+                  <div className="mb-4">
+                    <div className="flex justify-between items-center mb-1">
+                      <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+                        <BookOpen className={`w-5 h-5 ${isDemoLoaded ? 'text-warning' : 'text-info'}`} /> Programaciones
+                      </h3>
+                      {hasPdFile && <Badge variant={isDemoLoaded ? 'warning' : 'info'}>Activa</Badge>}
+                    </div>
+                    <p className="text-sm text-muted mt-2 leading-relaxed">
+                      Plantillas curriculares. Doble clic para cargar una programación independiente.
+                    </p>
+                  </div>
+
+                  <div className="flex-1 flex flex-col gap-2 min-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                    {workspaceHandle && workspaceFiles.programaciones.length > 0 ? (
+                      workspaceFiles.programaciones.map(p => {
+                        const isActive = pdFileSource.type === 'local' && pdFileSource.fileName === p;
+                        return (
+                          <button
+                            key={p}
+                            onDoubleClick={async () => {
+                              const ok = await fileManager.loadProgramacionFromWorkspace(workspaceHandle, p);
+                              if (ok) toast.success(`Programación abierta correctamente`);
+                              else toast.error("Error al abrir programación");
+                            }}
+                            className={`w-full text-left p-3 rounded-lg border transition-colors group/item ${isActive ? 'bg-info/10 border-info/40 shadow-sm' : 'border-[var(--glass-border)] bg-foreground/[0.02] hover:bg-foreground/5'}`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <BookOpen className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-info' : 'text-info/70 group-hover/item:text-info'}`} />
+                              <span className={`text-sm font-medium truncate ${isActive ? 'text-info font-bold' : ''}`} title={p}>{p.replace('.json', '')}</span>
+                            </div>
+                          </button>
+                        );
+                      })
+                    ) : workspaceHandle ? (
+                      <div className="h-full flex items-center justify-center text-center p-4">
+                        <p className="text-sm text-muted">No se han encontrado programaciones.</p>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {/* Botonera Programación */}
+                  <div className="flex flex-col gap-2 pt-4 mt-auto border-t border-[var(--glass-border)]">
+                    {isDemoLoaded ? (
+                      <Button onClick={handleLoadDemo} className="w-full bg-warning/20 hover:bg-warning/30 text-warning border border-warning/30">
+                        <Zap className="w-4 h-4 mr-2" /> Recargar DEMO
+                      </Button>
+                    ) : (
+                      <>
+                        <div className="flex gap-2">
+                          <Button onClick={handleNewPd} className="flex-1 bg-info/10 hover:bg-info/20 text-info border border-info/30 transition-all text-xs h-9">
+                            <Plus className="w-3 h-3 mr-1" /> Nueva (Catálogo)
+                          </Button>
+                          <Button onClick={handleOpenPd} className="flex-1 bg-foreground/5 hover:bg-foreground/10 text-foreground border border-[var(--glass-border)] transition-all text-xs h-9">
+                            <FolderOpen className="w-3 h-3 mr-1" /> Importar
+                          </Button>
+                        </div>
+                        {hasPdFile && (
+                          <div className="flex gap-2">
+                            <Button onClick={handleSavePd} className="flex-1 bg-info/10 hover:bg-info/20 text-info border border-info/30 transition-all text-xs h-9">
+                              <Save className="w-3 h-3 mr-1" /> Guardar
+                            </Button>
+                            <Button onClick={handleSaveAsPd} className="bg-foreground/5 hover:bg-foreground/10 text-muted border border-[var(--glass-border)] transition-all px-3 h-9" title="Guardar como...">
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </Card>
+
+              {/* ── Columna CURSO ── */}
+              <Card className={`p-6 border rounded-2xl shadow-lg flex flex-col relative overflow-hidden group ${isDemoLoaded ? 'bg-foreground/5 border-warning/20' : 'bg-foreground/5 border-success/20'}`}>
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
+                  <Users className={`w-24 h-24 ${isDemoLoaded ? 'text-warning' : 'text-success'}`} />
+                </div>
+                <div className="relative z-10 flex flex-col h-full">
+                  <div className="mb-4">
+                    <div className="flex justify-between items-center mb-1">
+                      <h3 className={`text-xl font-bold flex items-center gap-2 ${(!isDemoLoaded && !hasPdFile) ? 'text-muted' : 'text-foreground'}`}>
+                        <Users className={`w-5 h-5 ${isDemoLoaded ? 'text-warning' : (!isDemoLoaded && !hasPdFile) ? 'text-muted' : 'text-success'}`} /> Cursos
+                      </h3>
+                      {hasCursoFile && <Badge variant={isDemoLoaded ? 'warning' : 'success'}>Activo</Badge>}
+                    </div>
+                    <p className="text-sm text-muted mt-2 leading-relaxed">
+                      Cuadernos de clase e instancias temporales de una programación.
+                    </p>
+                  </div>
+
+                  <div className="flex-1 flex flex-col gap-2 min-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                    {workspaceHandle && workspaceFiles.cursos.length > 0 ? (
+                      workspaceFiles.cursos.map(c => {
+                        const isActive = cursoFileSource.type === 'local' && cursoFileSource.fileName === c;
+                        return (
+                          <button
+                            key={c}
+                            onDoubleClick={() => {
+                              toast.error("Para abrir un curso de forma segura, haz doble clic en su Grupo asociado en la primera columna.");
+                            }}
+                            className={`w-full text-left p-3 rounded-lg border transition-colors group/item ${isActive ? 'bg-success/10 border-success/40 shadow-sm' : 'border-[var(--glass-border)] bg-foreground/[0.02] hover:bg-foreground/5 opacity-80 hover:opacity-100'}`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <Users className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-success' : 'text-success/70 group-hover/item:text-success'}`} />
+                              <span className={`text-sm font-medium truncate ${isActive ? 'text-success font-bold' : ''}`} title={c}>{c.replace('.json', '')}</span>
+                            </div>
+                          </button>
+                        );
+                      })
+                    ) : workspaceHandle ? (
+                      <div className="h-full flex items-center justify-center text-center p-4">
+                        <p className="text-sm text-muted">No se han encontrado cursos.</p>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {/* Botonera Curso */}
+                  <div className="flex flex-col gap-2 pt-4 mt-auto border-t border-[var(--glass-border)]">
+                    {isDemoLoaded ? (
+                      <Button onClick={handleLoadDemo} className="w-full bg-warning/20 hover:bg-warning/30 text-warning border border-warning/30">
+                        <Zap className="w-4 h-4 mr-2" /> Recargar DEMO
+                      </Button>
+                    ) : (
+                      <>
+                        <div className="flex gap-2">
+                          <Button disabled={!hasPdFile} onClick={handleNewCurso} className="flex-1 bg-success/10 hover:bg-success/20 text-success border border-success/30 transition-all disabled:opacity-30 text-xs h-9" title="Crea un curso y su archivo Grupo asociado">
+                            <Plus className="w-3 h-3 mr-1" /> Iniciar Curso (+ Grupo)
+                          </Button>
+                          <Button disabled={!hasPdFile} onClick={handleOpenCurso} className="bg-foreground/5 hover:bg-foreground/10 text-foreground border border-[var(--glass-border)] transition-all px-3 h-9" title="Importar curso huérfano">
+                            <FolderOpen className="w-3 h-3" />
+                          </Button>
+                        </div>
+                        {hasCursoFile && (
+                          <div className="flex gap-2">
+                            <Button onClick={handleSaveCurso} className="flex-1 bg-success/10 hover:bg-success/20 text-success border border-success/30 transition-all text-xs h-9">
+                              <Save className="w-3 h-3 mr-1" /> Guardar
+                            </Button>
+                            <Button onClick={handleSaveAsCurso} className="bg-foreground/5 hover:bg-foreground/10 text-muted border border-[var(--glass-border)] transition-all px-3 h-9" title="Guardar como...">
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </Card>
+
             </div>
-          </MotionWrapper>
+          )}
+
+          {/* TAB: NUBE (GOOGLE DRIVE & ONEDRIVE) */}
+          {activeTab === "nube" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Columna Google Drive */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+                  <Cloud className="w-5 h-5 text-[#4285F4]" /> Google Drive
+                </h3>
+                <GoogleDriveSyncPanel />
+              </div>
+
+              {/* Columna OneDrive */}
+              <div className="space-y-4">
+                <OneDriveSyncPanel />
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+
+        {/* Security notice - always visible, full-width */}
+        <div className="mt-8">
+          <Card className="flex items-start gap-4 p-6 bg-info/5 border border-info/20 rounded-2xl shadow-lg">
+            <span className="text-info mt-1 shrink-0"><ShieldAlert className="w-8 h-8" /></span>
+            <div>
+              <h3 className="text-lg font-bold text-foreground mb-2">Seguridad y RGPD garantizados</h3>
+              <div className="text-sm text-foreground/80 space-y-2 leading-relaxed">
+                <p>EntidadIES procesa toda tu información confidencial exclusivamente en tu navegador. <strong>Tú eres el dueño de tus archivos</strong>.</p>
+                <p>Ningún dato de tu alumnado se envía a la nube, salvo que uses la Sincronización autorizada en tu cuenta.</p>
+                <p className="font-semibold text-info mt-2">Asegúrate de pulsar &quot;Guardar&quot; al finalizar tu sesión de trabajo para no perder los últimos cambios.</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </PageLayout>
 
       {/* New File Wizard */}
       <NewFileWizard
@@ -734,7 +708,7 @@ export default function ArchivosTrabajoPage() {
           </Card>
         </div>
       )}
-    </div>
+    </>
   );
 }
 

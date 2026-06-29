@@ -154,7 +154,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db), current_user: U
         raise HTTPException(status_code=500, detail=str(e))
 
 class AssignmentUpdate(BaseModel):
-    module_ids: list[int]
+    course_group_ids: list[int]
 
 @router.get("/assignments")
 def get_assignments(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -164,8 +164,19 @@ def get_assignments(db: Session = Depends(get_db), current_user: User = Depends(
         for a in assignments:
             if a.user_id not in result:
                 result[a.user_id] = []
-            result[a.user_id].append(a.module_id)
+            result[a.user_id].append(a.course_group_id)
         return {"status": "success", "data": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/centers")
+def list_centers(db: Session = Depends(get_db)):
+    try:
+        centers = db.query(Center).order_by(Center.name).all()
+        return {
+            "status": "success",
+            "data": [{"id": c.id, "name": c.name, "titularity": c.titularity.value if hasattr(c.titularity, 'value') else c.titularity, "code": c.code} for c in centers]
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -173,8 +184,8 @@ def get_assignments(db: Session = Depends(get_db), current_user: User = Depends(
 def update_assignments(user_id: int, req: AssignmentUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     try:
         db.query(TeachingAssignment).filter(TeachingAssignment.user_id == user_id).delete()
-        for mid in req.module_ids:
-            db.add(TeachingAssignment(user_id=user_id, module_id=mid))
+        for cgid in req.course_group_ids:
+            db.add(TeachingAssignment(user_id=user_id, course_group_id=cgid))
         db.commit()
         return {"status": "success", "message": "Asignaciones actualizadas"}
     except Exception as e:

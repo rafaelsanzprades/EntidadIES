@@ -9,103 +9,13 @@ class Titularidad(enum.Enum):
     CONCERTADA = "Concertada"
     PRIVADA = "Privada"
 
-class NivelFP(enum.Enum):
-    BASICA = "Grado Básico"
-    MEDIO = "Grado Medio"
-    SUPERIOR = "Grado Superior"
-    ESPECIALIZACION = "Curso de Especialización"
-
-# ==========================================
-# 1. MAESTROS Y TERRITORIO
-# ==========================================
-class Region(Base):
-    __tablename__ = "regions"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, nullable=False) # ej: Aragón
-    provinces = relationship("Province", back_populates="region")
-
-class Province(Base):
-    __tablename__ = "provinces"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    region_id = Column(Integer, ForeignKey("regions.id"))
-    region = relationship("Region", back_populates="provinces")
-    cities = relationship("City", back_populates="province")
-
-class City(Base):
-    __tablename__ = "cities"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    province_id = Column(Integer, ForeignKey("provinces.id"))
-    province = relationship("Province", back_populates="cities")
-
-# ==========================================
-# 2. FAMILIAS PROFESIONALES Y CURRÍCULO
-# ==========================================
-class ProfessionalFamily(Base):
-    __tablename__ = "professional_families"
-    id = Column(Integer, primary_key=True, index=True)
-    code = Column(String, unique=True, index=True) # ej: IFC para Informática
-    name = Column(String, nullable=False)
-    icon_url = Column(String) # Icono de eligetuprofesion.aragon.es
-    color_hex = Column(String)
-    degrees = relationship("Degree", back_populates="family")
-
-class Degree(Base):
-    __tablename__ = "degrees"
-    id = Column(Integer, primary_key=True, index=True)
-    family_id = Column(Integer, ForeignKey("professional_families.id"))
-    level = Column(Enum(NivelFP), nullable=False)
-    name = Column(String, nullable=False)
-    hours = Column(Integer)
-    code = Column(String, index=True)  # código del currículo, ej: ELE203
-    boa_articles = Column(JSON, default={})
-    
-    family = relationship("ProfessionalFamily", back_populates="degrees")
-    modules = relationship("Module", back_populates="degree")
-
-class Module(Base):
-    __tablename__ = "modules"
-    id = Column(Integer, primary_key=True, index=True)
-    degree_id = Column(Integer, ForeignKey("degrees.id"))
-    code = Column(String) # ej: 0484
-    name = Column(String, nullable=False) # ej: Bases de Datos
-    hours = Column(Integer)
-    curso = Column(String, nullable=True) # ej: "1º", "2º", "Ambos"
-    is_dual = Column(Boolean, default=True) # Sujeto a FEOE
-    convalidation_competences = Column(String, nullable=True) # JSON con datos de Catedu
-    
-    degree = relationship("Degree", back_populates="modules")
-    learning_outcomes = relationship("LearningOutcome", back_populates="module", cascade="all, delete-orphan")
-
-class LearningOutcome(Base):
-    __tablename__ = "learning_outcomes"
-    id = Column(Integer, primary_key=True, index=True)
-    module_id = Column(Integer, ForeignKey("modules.id"))
-    ra_number = Column(Integer) # e.g., 9 for "RA9"
-    description = Column(String, nullable=False) # e.g., "Desarrolla..."
-    
-    module = relationship("Module", back_populates="learning_outcomes")
-    evaluation_criteria = relationship("EvaluationCriterion", back_populates="learning_outcome", cascade="all, delete-orphan")
-
-class EvaluationCriterion(Base):
-    __tablename__ = "evaluation_criteria"
-    id = Column(Integer, primary_key=True, index=True)
-    learning_outcome_id = Column(Integer, ForeignKey("learning_outcomes.id"))
-    ce_code = Column(String, nullable=False) # e.g., "CE1.1" or "a)"
-    description = Column(String, nullable=False)
-    
-    learning_outcome = relationship("LearningOutcome", back_populates="evaluation_criteria")
+# Capa 1 eliminada: Region, Province, City, ProfessionalFamily, Degree,
+# Module, LearningOutcome, EvaluationCriterion
+# Los datos de catálogo BOE/BOA no se almacenan en la BD del servidor.
 
 # ==========================================
 # 3. CENTROS EDUCATIVOS
 # ==========================================
-# Tabla asociativa para Centros y Títulos (Qué imparte cada centro)
-center_degrees_table = Table(
-    'center_degrees', Base.metadata,
-    Column('center_id', Integer, ForeignKey('centers.id'), primary_key=True),
-    Column('degree_id', Integer, ForeignKey('degrees.id'), primary_key=True)
-)
 
 class Center(Base):
     __tablename__ = "centers"
@@ -113,9 +23,6 @@ class Center(Base):
     code = Column(String, unique=True, index=True) # Código oficial del centro
     name = Column(String, nullable=False)
     titularity = Column(Enum(Titularidad), nullable=False, default=Titularidad.PUBLICA)
-    city_id = Column(Integer, ForeignKey("cities.id"))
-    
-    degrees = relationship("Degree", secondary=center_degrees_table)
 
 # ==========================================
 # 4. USUARIOS, ROLES Y CURSOS
@@ -157,7 +64,6 @@ class DepartmentHead(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id'))
     center_id = Column(Integer, ForeignKey('centers.id'))
-    family_id = Column(Integer, ForeignKey('professional_families.id'))
     academic_year_id = Column(Integer, ForeignKey('academic_years.id'))
 
 # Rol: Coordinador Dual (Nivel Centro)
@@ -168,13 +74,12 @@ class DualCoordinator(Base):
     center_id = Column(Integer, ForeignKey('centers.id'))
     academic_year_id = Column(Integer, ForeignKey('academic_years.id'))
 
-# Rol: Tutor Dual General (Prospector de Empresas por Centro o Familia)
+# Rol: Tutor Dual General (Prospector de Empresas por Centro)
 class DualGeneralTutor(Base):
     __tablename__ = 'dual_general_tutors'
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id'))
     center_id = Column(Integer, ForeignKey('centers.id'))
-    family_id = Column(Integer, ForeignKey('professional_families.id'), nullable=True) # Opcional: filtrado por familia
     academic_year_id = Column(Integer, ForeignKey('academic_years.id'))
 
 # Entidad Organizativa: Grupo/Clase (ej. 1º DAW Diurno)
@@ -182,7 +87,6 @@ class CourseGroup(Base):
     __tablename__ = "course_groups"
     id = Column(Integer, primary_key=True, index=True)
     center_id = Column(Integer, ForeignKey("centers.id"))
-    degree_id = Column(Integer, ForeignKey("degrees.id"))
     academic_year_id = Column(Integer, ForeignKey("academic_years.id"))
     name = Column(String)
 
@@ -200,7 +104,6 @@ class TeachingAssignment(Base):
     __tablename__ = "teaching_assignments"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    module_id = Column(Integer, ForeignKey("modules.id"))
     course_group_id = Column(Integer, ForeignKey("course_groups.id"))
     academic_year_id = Column(Integer, ForeignKey("academic_years.id"))
 
@@ -209,7 +112,6 @@ class Enrollment(Base):
     __tablename__ = "enrollments"
     id = Column(Integer, primary_key=True, index=True)
     student_id = Column(Integer, ForeignKey("users.id"))
-    module_id = Column(Integer, ForeignKey("modules.id"))
     course_group_id = Column(Integer, ForeignKey("course_groups.id"))
     academic_year_id = Column(Integer, ForeignKey("academic_years.id"))
 
@@ -411,3 +313,201 @@ class AttendanceRecord(Base):
     student_id = Column(String, index=True)
     date_str = Column(String, index=True)
     status = Column(String)
+
+
+# ==========================================
+# APE — AULA PROFESIONAL DE EMPRENDIMIENTO
+# ==========================================
+
+class ApePrograma(Base):
+    """
+    Programa APE de un curso académico.
+    Datos cuasiestáticos (catálogo). Se crean una vez por curso.
+    """
+    __tablename__ = "ape_programas"
+    id = Column(Integer, primary_key=True, index=True)
+    curso_academico = Column(String, nullable=False, index=True)  # ej: "2024-25"
+    nombre = Column(String, nullable=False, default="Aula Profesional de Emprendimiento")
+    descripcion = Column(String)
+    created_at = Column(DateTime, server_default=func.now())
+    actividades = relationship("ApeActividad", back_populates="programa", order_by="ApeActividad.numero")
+
+
+class ApeActividad(Base):
+    """
+    Actividad individual dentro de un programa APE.
+    Una actividad = una salida, visita, taller o evento.
+    """
+    __tablename__ = "ape_actividades"
+    id = Column(Integer, primary_key=True, index=True)
+    programa_id = Column(Integer, ForeignKey("ape_programas.id", ondelete="CASCADE"), index=True)
+    numero = Column(Integer, nullable=False)             # Orden dentro del programa (1, 2, ...)
+    nombre = Column(String, nullable=False)              # ej: "Visita FIMA - Zaragoza"
+    tipo = Column(String)                                # "visita_empresa", "visita_institucional", "taller", "charla", "evento", "curso"
+    objetivos = Column(JSON, default=[])                 # Lista de objetivos generales
+    actividades_posibles = Column(JSON, default=[])      # Lista de actividades posibles
+    contenidos = Column(JSON, default=[])                # Lista de contenidos
+    recursos_materiales = Column(String)                 # Descripción materiales
+    recursos_economicos = Column(String)                 # Importe en euros (como string para flexibilidad)
+    num_alumnos = Column(String)                         # Descripción del alumnado + total
+    num_actuaciones = Column(Integer, default=1)         # Número de actuaciones realizadas
+    indicadores_difusion = Column(JSON, default=[])      # ej: ["Twitter", "Instagram"]
+    reuniones_preparacion = Column(String)               # Descripción reuniones internas
+    reuniones_externas = Column(String)                  # Descripción contactos con externos
+    observaciones = Column(String)                       # Campo libre para notas adicionales
+    programa = relationship("ApePrograma", back_populates="actividades")
+
+# ==========================================
+# 8. SISTEMA DE GESTIÓN DE CALIDAD (CENTRO)
+# ==========================================
+
+class QmsActor(Base):
+    __tablename__ = "qms_actors"
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String, nullable=False)
+    tipo = Column(String) # 'interno', 'familia', 'externo', 'pas'
+    descripcion = Column(String)
+
+class QmsProgram(Base):
+    __tablename__ = "qms_programs"
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String, nullable=False)
+    descripcion = Column(String)
+    coordinador_actor_id = Column(Integer, ForeignKey("qms_actors.id"))
+    
+    coordinador = relationship("QmsActor")
+    objetivos = relationship("QmsObjective", back_populates="programa")
+
+class QmsDafoItem(Base):
+    __tablename__ = "qms_dafo_items"
+    id = Column(Integer, primary_key=True, index=True)
+    tipo = Column(String, nullable=False) # 'D', 'A', 'F', 'O'
+    descripcion = Column(String, nullable=False)
+    curso_academico = Column(String)
+
+class QmsObjective(Base):
+    __tablename__ = "qms_objectives"
+    id = Column(Integer, primary_key=True, index=True)
+    program_id = Column(Integer, ForeignKey("qms_programs.id"))
+    descripcion = Column(String, nullable=False)
+    curso_academico = Column(String)
+    
+    programa = relationship("QmsProgram", back_populates="objetivos")
+    actividades = relationship("QmsActivity", back_populates="objetivo")
+
+class QmsActivity(Base):
+    __tablename__ = "qms_activities"
+    id = Column(Integer, primary_key=True, index=True)
+    objective_id = Column(Integer, ForeignKey("qms_objectives.id"))
+    nombre = Column(String, nullable=False)
+    descripcion = Column(String)
+    responsable_actor_id = Column(Integer, ForeignKey("qms_actors.id"))
+    temporalizacion = Column(String)
+    recursos = Column(String)
+    estado = Column(String) # 'planificada', 'en_proceso', 'completada', 'cancelada'
+    
+    objetivo = relationship("QmsObjective", back_populates="actividades")
+    responsable = relationship("QmsActor")
+
+# ==========================================
+# QMS: MAPA DE PROCESOS Y RELACIONES
+# ==========================================
+class QmsProcess(Base):
+    __tablename__ = "qms_processes"
+    id = Column(Integer, primary_key=True, index=True)
+    tipo = Column(String)
+    grupo = Column(String, nullable=True)
+    nombre = Column(String)
+    drive_id = Column(String, nullable=True)
+    descripcion = Column(String, nullable=True)
+    responsable = Column(String, nullable=True)
+    activo = Column(Boolean, default=True)
+    orden = Column(Integer, default=0)
+
+    indicadores = relationship("QmsIndicator", back_populates="proceso")
+    riesgos = relationship("QmsRisk", back_populates="proceso")
+    no_conformidades = relationship("QmsNonConformity", back_populates="proceso")
+
+class QmsIndicator(Base):
+    __tablename__ = "qms_indicators"
+    id = Column(Integer, primary_key=True, index=True)
+    process_id = Column(Integer, ForeignKey("qms_processes.id"))
+    descripcion = Column(String, nullable=False)
+    frecuencia = Column(String)
+    meta_cuantitativa = Column(String)
+    valor_actual = Column(String)
+    metodo_evaluacion = Column(String)
+    responsable = Column(String)
+    
+    proceso = relationship("QmsProcess", back_populates="indicadores")
+    evaluaciones = relationship("QmsEvaluation", back_populates="indicador")
+
+class QmsEvaluation(Base):
+    __tablename__ = "qms_evaluations"
+    id = Column(Integer, primary_key=True, index=True)
+    indicator_id = Column(Integer, ForeignKey("qms_indicators.id"))
+    fecha = Column(String)
+    analisis_desviacion = Column(String)
+    propuesta_mejora = Column(String)
+    
+    indicador = relationship("QmsIndicator", back_populates="evaluaciones")
+
+class QmsRisk(Base):
+    __tablename__ = "qms_risks"
+    id = Column(Integer, primary_key=True, index=True)
+    process_id = Column(Integer, ForeignKey("qms_processes.id"), nullable=True)
+    descripcion = Column(String, nullable=False)
+    tipo = Column(String) # 'Riesgo' u 'Oportunidad'
+    probabilidad = Column(Integer) # 1 a 5
+    impacto = Column(Integer) # 1 a 5
+    nivel_riesgo = Column(Integer) # probabilidad * impacto
+    accion_mitigacion = Column(String)
+    estado = Column(String) # 'Abierto', 'Mitigado', 'Cerrado'
+
+    proceso = relationship("QmsProcess", back_populates="riesgos")
+
+class QmsAudit(Base):
+    __tablename__ = "qms_audits"
+    id = Column(Integer, primary_key=True, index=True)
+    fecha = Column(String)
+    tipo = Column(String) # 'Interna', 'Externa'
+    auditor = Column(String)
+    alcance = Column(String)
+    estado = Column(String) # 'Planificada', 'En curso', 'Finalizada'
+    
+    no_conformidades = relationship("QmsNonConformity", back_populates="auditoria")
+
+class QmsNonConformity(Base):
+    __tablename__ = "qms_non_conformities"
+    id = Column(Integer, primary_key=True, index=True)
+    audit_id = Column(Integer, ForeignKey("qms_audits.id"))
+    process_id = Column(Integer, ForeignKey("qms_processes.id"), nullable=True)
+    codigo = Column(String) # ej. NC-2025-01
+    descripcion = Column(String, nullable=False)
+    tipo = Column(String) # 'Crítica', 'Mayor', 'Menor', 'Observación'
+    estado = Column(String) # 'Abierta', 'En curso', 'Cerrada'
+    accion_correctiva = Column(String)
+    fecha_cierre_prevista = Column(String)
+    
+    auditoria = relationship("QmsAudit", back_populates="no_conformidades")
+    proceso = relationship("QmsProcess", back_populates="no_conformidades")
+
+# ==========================================
+# XCELENCE
+# ==========================================
+class XcelenceEvaluation(Base):
+    __tablename__ = "xcelence_evaluations"
+    id = Column(Integer, primary_key=True, index=True)
+    center_id = Column(Integer, ForeignKey("centers.id"))
+    academic_year = Column(String) # ej. "2025/2026"
+    
+    # Store the parsed details for each Clave in a JSON column.
+    # Format: 
+    # {
+    #   "1": { "score": 52, "situacion": ["..."], "recomendaciones": ["..."] },
+    #   "2": { "score": 62, "situacion": ["..."], "recomendaciones": ["..."] },
+    #   ...
+    # }
+    eval_data = Column(JSON, default={})
+    
+    center = relationship("Center")

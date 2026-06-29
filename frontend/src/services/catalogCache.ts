@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Catalog Cache Service
  * 
  * Caches RA/CE descriptions from the catalog API to avoid redundant fetches.
@@ -24,54 +24,8 @@ const cache = new Map<string, CachedCatalogData>();
  * Also loads OG and CPPS from the curriculum endpoint (boa_articles).
  */
 export async function loadCatalogForModule(moduleCode: string): Promise<void> {
-  const existing = cache.get(moduleCode);
-  if (existing && (Date.now() - existing.loaded) < CACHE_TTL_MS) return;
-  
-  try {
-    const res = await fetch(`/api/catalog/module/${moduleCode}`);
-    if (!res.ok) return;
-    const json = await res.json();
-    if (json.status !== 'success' || !json.data) return;
-    
-    const raMap = new Map<string, string>();
-    const ceMap = new Map<string, string>();
-    
-    for (const ra of (json.data.ra || [])) {
-      // API returns id like "RA1." - normalize to "RA1"
-      const raId = ra.id.replace(/\.$/, '');
-      raMap.set(raId, ra.descripcion);
-      
-      for (const ce of (ra.ce || [])) {
-        ceMap.set(ce.id, ce.descripcion);
-      }
-    }
-    
-    // Load OG and CPPS from curriculum endpoint (boa_articles)
-    let og: Array<{ id: string; desc: string }> = [];
-    let cpps: Array<{ id: string; desc: string }> = [];
-    try {
-      const degreeCode = json.data.degree_code || moduleCode;
-      const curRes = await fetch(`/api/catalog/curriculum/${degreeCode}`);
-      if (curRes.ok) {
-        const curJson = await curRes.json();
-        if (curJson.status === 'success' && curJson.data?.boa_articles) {
-          og = curJson.data.boa_articles.article_9_og || [];
-          cpps = curJson.data.boa_articles.article_5_cpps || [];
-        }
-      }
-    } catch { /* OG/CPPS not critical */ }
-    
-    cache.set(moduleCode, {
-      ra: raMap,
-      ce: ceMap,
-      ud: new Map(),
-      og,
-      cpps,
-      loaded: Date.now()
-    });
-  } catch (err) {
-    console.warn(`[catalogCache] Failed to load catalog for ${moduleCode}:`, err);
-  }
+  // Legacy catalog fetching removed. Local-first architecture relies on local file data.
+  return Promise.resolve();
 }
 
 /**

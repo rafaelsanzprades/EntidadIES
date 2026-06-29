@@ -74,7 +74,7 @@ export default function Sidebar() {
           <div className="flex flex-col mb-3">
             <Link href="/inicio" onClick={() => { if (window.innerWidth < 1024) toggleSidebar(); }}>
               <h1 className="text-[1.3rem] font-extrabold leading-tight text-foreground hover:text-info transition-colors tracking-tight whitespace-nowrap cursor-pointer">
-                Cuaderno FP
+                Entidad IES
               </h1>
             </Link>
             <span className="text-sm text-muted/80 font-mono mt-0.5 ml-0.5">{timeStr}</span>
@@ -93,42 +93,13 @@ export default function Sidebar() {
         onScroll={handleScroll}
         className={`sidebar-scroll-container flex-1 ${isSidebarOpen ? 'px-3' : 'px-2'} py-2 space-y-4 overflow-x-hidden overflow-y-auto scrollbar-hide`}
       >
-        <div className="flex flex-col gap-0.5 mb-4">
-          {(() => {
-            const linkContent = (
-              <Link
-                href="/agenda"
-                onClick={() => { if (window.innerWidth < 1024) toggleSidebar(); }}
-                className={`flex items-center ${isSidebarOpen ? 'gap-2.5 px-3' : 'justify-center px-0'} py-3 rounded-lg transition-all duration-150 group shadow-md bg-gradient-to-r ${dataSource === 'demo' ? 'from-warning/20 to-warning/5 border border-warning/40 text-foreground hover:bg-warning/20' : 'from-accent/20 to-accent/5 border border-accent/40 text-foreground hover:bg-accent/20'}`}
-              >
-                <span className={`flex items-center justify-center transition-transform duration-150 ${pathname === '/agenda' ? (dataSource === 'demo' ? 'scale-110 text-warning' : 'scale-110 text-accent') : (dataSource === 'demo' ? 'text-warning group-hover:scale-110' : 'text-accent group-hover:scale-110')}`}>
-                  <CalendarDays className="w-5 h-5" strokeWidth={2} />
-                </span>
-                {isSidebarOpen && (
-                  <div className="flex flex-col gap-1 items-start">
-                    <span className={`text-[0.95rem] leading-tight whitespace-nowrap font-bold ${pathname === '/agenda' ? (dataSource === 'demo' ? 'text-warning' : 'text-accent') : ''}`}>
-                      Agenda
-                    </span>
-                    <span className={`px-2 py-0.5 rounded text-xs border font-semibold tracking-wider leading-none ${dataSource === 'demo' ? 'text-warning bg-warning/10 border-warning/30' : 'text-accent bg-accent/10 border-accent/30'}`}>
-                      {dateStr}
-                    </span>
-                  </div>
-                )}
-              </Link>
-            );
-            return !isSidebarOpen ? (
-              <Tooltip content="Agenda" position="right" delay={0.1}>
-                {linkContent}
-              </Tooltip>
-            ) : linkContent;
-          })()}
-        </div>
+
 
         {navGroups.map((group, idx) => (
           <div key={group.title} className="flex flex-col gap-0.5">
             {group.title && isSidebarOpen && (
               <div className="flex flex-col mb-2 mt-3">
-                <div className="text-[0.95rem] font-bold text-foreground/90 tracking-wide px-3 mb-1.5 uppercase">
+                <div className="text-[0.95rem] font-bold text-foreground/90 tracking-wide px-3 mb-1.5">
                   {group.title.replace("[Código del módulo]", `[${activeModuleId ? activeModuleId.split('-')[0] : 'CÓDIGO'}]`)}
                 </div>
                 <div className="mx-3 h-px bg-[var(--glass-border)]" />

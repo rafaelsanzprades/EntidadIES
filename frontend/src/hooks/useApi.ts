@@ -3,13 +3,6 @@ import { useSession } from 'next-auth/react';
 import { fetcher } from '@/services/api';
 import { ModuleData, CursoData, ModuleDataSchema, CursoDataSchema } from '@/types';
 
-export function useModulesList() {
-  const { data: session } = useSession();
-  const userId = session?.user?.id;
-  const url = userId ? `${process.env.NEXT_PUBLIC_API_URL}/api/modules?user_id=${userId}` : `${process.env.NEXT_PUBLIC_API_URL}/api/modules`;
-  return useSWR(url, fetcher);
-}
-
 export function useModule(moduleId: string | null) {
   const { data, error, isLoading, mutate } = useSWR(moduleId ? `${process.env.NEXT_PUBLIC_API_URL}/api/module/${moduleId}` : null, fetcher);
   
@@ -57,19 +50,15 @@ export function useUsers() {
   return useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/users`, fetcher);
 }
 
-export function useAdminModules() {
-  return useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/modules`, fetcher);
-}
-
 export function useAssignments() {
   return useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/assignments`, fetcher);
 }
 
-export const saveAssignments = async (userId: string, moduleIds: number[]) => {
+export const saveAssignments = async (userId: string, courseGroupIds: number[]) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/assignments/${userId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ module_ids: moduleIds })
+    body: JSON.stringify({ course_group_ids: courseGroupIds })
   });
   const json = await res.json();
   if (json.status !== 'success') {
@@ -77,11 +66,3 @@ export const saveAssignments = async (userId: string, moduleIds: number[]) => {
   }
   return json;
 };
-
-export function useFamilies() {
-  return useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/families`, fetcher);
-}
-
-export function useLearningOutcomes() {
-  return useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/learning_outcomes`, fetcher);
-}
